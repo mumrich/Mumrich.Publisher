@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Builder;
+
 namespace Mumrich.Publisher.Host
 {
   public static class Program
