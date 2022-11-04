@@ -4,7 +4,10 @@ using System.Net.Mime;
 
 using Microsoft.AspNetCore.Mvc;
 
+using SkiaSharp;
+
 using Svg;
+using Svg.Skia;
 
 namespace Mumrich.Publisher.Host.Controllers
 {
@@ -13,6 +16,51 @@ namespace Mumrich.Publisher.Host.Controllers
   {
     [HttpGet]
     public FileStreamResult Get()
+    {
+      var svgDoc = GetSvgDocument();
+
+      MemoryStream memoryStream = new();
+      svgDoc.Write(memoryStream);
+
+      memoryStream.Seek(0, SeekOrigin.Begin);
+
+      return File(memoryStream, MediaTypeNames.Text.Html);
+    }
+
+    [HttpGet("json")]
+    public SvgDocument GetJson()
+    {
+      return GetSvgDocument();
+    }
+
+    [HttpGet("pdf")]
+    public FileStreamResult GetPdf()
+    {
+      var svgDoc = GetSvgDocument();
+
+      var skSvg = new SKSvg();
+
+      skSvg.FromSvgDocument(svgDoc);
+
+      MemoryStream memoryStream = new();
+
+      ToPdf(skSvg.Picture, memoryStream, SKColors.Empty, 1f, 1f);
+
+      memoryStream.Seek(0, SeekOrigin.Begin);
+
+      return File(memoryStream, MediaTypeNames.Application.Pdf);
+    }
+
+    private static void Draw(SKPicture skPicture, SKColor background, float scaleX, float scaleY, SKCanvas skCanvas)
+    {
+      skCanvas.DrawColor(background);
+      skCanvas.Save();
+      skCanvas.Scale(scaleX, scaleY);
+      skCanvas.DrawPicture(skPicture);
+      skCanvas.Restore();
+    }
+
+    private static SvgDocument GetSvgDocument()
     {
       var svgDoc = new SvgDocument
       {
@@ -31,13 +79,24 @@ namespace Mumrich.Publisher.Host.Controllers
         Stroke = new SvgColourServer(Color.Black),
         StrokeWidth = 2
       });
+      group.Children.Add(new SvgText("I love SVG!"));
 
-      MemoryStream memoryStream = new();
-      svgDoc.Write(memoryStream);
+      return svgDoc;
+    }
 
-      memoryStream.Seek(0, SeekOrigin.Begin);
-
-      return File(memoryStream, MediaTypeNames.Text.Html);
+    private static bool ToPdf(SKPicture skPicture, Stream stream, SKColor background, float scaleX, float scaleY)
+    {
+      var width = skPicture.CullRect.Width * scaleX;
+      var height = skPicture.CullRect.Height * scaleY;
+      if (width <= 0 || height <= 0)
+      {
+        return false;
+      }
+      using var skDocument = SKDocument.CreatePdf(stream, SKDocument.DefaultRasterDpi);
+      using var skCanvas = skDocument.BeginPage(width, height);
+      Draw(skPicture, background, scaleX, scaleY, skCanvas);
+      skDocument.Close();
+      return true;
     }
   }
 }
