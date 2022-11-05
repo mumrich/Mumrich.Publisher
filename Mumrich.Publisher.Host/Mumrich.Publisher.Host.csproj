@@ -14,8 +14,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.3" />
     <PackageReference Include="Mumrich.SpaDevMiddleware" Version="1.2.0" />
-    <PackageReference Include="Svg" Version="3.4.4" />
+    <PackageReference Include="Svg.Skia" Version="0.6.0-preview3" />
   </ItemGroup>
 
 </Project>

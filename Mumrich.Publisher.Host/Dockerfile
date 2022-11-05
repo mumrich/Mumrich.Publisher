@@ -18,6 +18,7 @@ FROM build AS publish
 RUN dotnet publish "Mumrich.Publisher.Host.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
+RUN add-apt-repository ppa:quamotion/ppa && apt-get update && apt-get install -y libgdiplus
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "Mumrich.Publisher.Host.dll"]
