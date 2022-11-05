@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "svgson": "^5.2.1",
     "vue": "^3.2.41",
     "vuetify": "^3.0.0"
   },
