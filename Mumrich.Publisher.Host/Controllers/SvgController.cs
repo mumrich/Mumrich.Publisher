@@ -36,7 +36,7 @@ namespace Mumrich.Publisher.Host.Controllers
     [HttpGet("pdf")]
     public FileStreamResult GetPdf()
     {
-      var svgDoc = GetSvgDocument();
+      var svgDoc = GetSvgDocument(false);
 
       var skSvg = new SKSvg();
 
@@ -60,7 +60,7 @@ namespace Mumrich.Publisher.Host.Controllers
       skCanvas.Restore();
     }
 
-    private static SvgDocument GetSvgDocument()
+    private static SvgDocument GetSvgDocument(bool isInEditMode = true)
     {
       var svgDoc = new SvgDocument
       {
@@ -79,7 +79,34 @@ namespace Mumrich.Publisher.Host.Controllers
         Stroke = new SvgColourServer(Color.Black),
         StrokeWidth = 2
       });
-      group.Children.Add(new SvgText("I love SVG!"));
+
+      const string text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed mollis mollis mi ut ultricies. Nullam magna ipsum, porta vel dui convallis, rutrum imperdiet eros. Aliquam erat volutpat.";
+      if (isInEditMode)
+      {
+        var foreignObject = new SvgForeignObject();
+
+        foreignObject.CustomAttributes.Add("x", "20");
+        foreignObject.CustomAttributes.Add("y", "20");
+        foreignObject.CustomAttributes.Add("width", "160");
+        foreignObject.CustomAttributes.Add("height", "160");
+        foreignObject.Children.Add(new NonSvgElement("div", "http://www.w3.org/1999/xhtml")
+        {
+          Content = text
+        });
+
+        group.Children.Add(foreignObject);
+      }
+      else
+      {
+        var svgText = new SvgText(text);
+
+        svgText.CustomAttributes.Add("x", "20");
+        svgText.CustomAttributes.Add("y", "20");
+        svgText.CustomAttributes.Add("width", "160");
+        svgText.CustomAttributes.Add("height", "160");
+
+        group.Children.Add(svgText);
+      }
 
       return svgDoc;
     }
