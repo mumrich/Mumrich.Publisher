@@ -44,7 +44,7 @@ namespace Mumrich.Publisher.Host.Controllers
 
       MemoryStream memoryStream = new();
 
-      ToPdf(skSvg.Picture, memoryStream, SKColors.Empty, 1f, 1f);
+      ToPdf(skSvg.Picture, memoryStream, SKColors.Empty, 1f, 1f, 300);
 
       memoryStream.Seek(0, SeekOrigin.Begin);
 
@@ -81,6 +81,7 @@ namespace Mumrich.Publisher.Host.Controllers
       });
 
       const string text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed mollis mollis mi ut ultricies. Nullam magna ipsum, porta vel dui convallis, rutrum imperdiet eros. Aliquam erat volutpat.";
+
       if (isInEditMode)
       {
         var foreignObject = new SvgForeignObject();
@@ -108,10 +109,21 @@ namespace Mumrich.Publisher.Host.Controllers
         group.Children.Add(svgText);
       }
 
+      var svgImage = new SvgImage()
+      {
+        X = 30,
+        Y = 30,
+        Width = 200,
+        Height = 150,
+        Href = "https://localhost:7284/images/Large-Sample-png-Image-download-for-Testing.png"
+      };
+
+      svgDoc.Children.Add(svgImage);
+
       return svgDoc;
     }
 
-    private static bool ToPdf(SKPicture skPicture, Stream stream, SKColor background, float scaleX, float scaleY)
+    private static bool ToPdf(SKPicture skPicture, Stream stream, SKColor background, float scaleX, float scaleY, float rasterDpi = SKDocument.DefaultRasterDpi)
     {
       var width = skPicture.CullRect.Width * scaleX;
       var height = skPicture.CullRect.Height * scaleY;
@@ -119,7 +131,7 @@ namespace Mumrich.Publisher.Host.Controllers
       {
         return false;
       }
-      using var skDocument = SKDocument.CreatePdf(stream, SKDocument.DefaultRasterDpi);
+      using var skDocument = SKDocument.CreatePdf(stream, rasterDpi);
       using var skCanvas = skDocument.BeginPage(width, height);
       Draw(skPicture, background, scaleX, scaleY, skCanvas);
       skDocument.Close();
